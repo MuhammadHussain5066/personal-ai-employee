@@ -1,0 +1,5 @@
+
+## Error Handling
+- If file not found: Log error and leave marker file
+- If processing fails: Move file to `~/AI_Employee_Vault/Failed/`
+- If duplicate detected: Skip processing and log
