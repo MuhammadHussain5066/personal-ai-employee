@@ -1,1 +1,6 @@
 .aider*
+credentials.json
+token.json
+processed_ids.txt
+Needs_Action/
+Logs/
