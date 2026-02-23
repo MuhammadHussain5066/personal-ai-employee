@@ -1,0 +1,53 @@
+"""
+    
+    with open(filepath, "w") as f:
+        f.write(content)
+    
+    log_activity(f"Created action file: {filename}")
+    return filepath
+
+def find_keywords(text):
+    """Find matching keywords in text"""
+    return [kw for kw in KEYWORDS if re.search(rf'\b{kw}\b', text.lower())]
+
+def check_unread_messages(page):
+    """Check for unread messages and process them"""
+    unread_chats = page.query_selector_all("div[tab='chats'] div._19r1d._3Whw5")
+    
+    for chat in unread_chats:
+        contact_name = chat.text_content()
+        chat.click()
+        time.sleep(1)  # Wait for messages to load
+        
+        # Get last message text
+        message_elements = page.query_selector_all("div._3Whw5._1o696")
+        if message_elements:
+            last_message = message_elements[-1].text_content()
+            timestamp = page.query_selector("span._3AD3M").text_content()
+            
+            keywords_found = find_keywords(last_message)
+            if keywords_found:
+                create_action_file(contact_name, last_message, timestamp)
+    
+    return len(unread_chats)
+
+def main():
+    """Main watcher loop"""
+    page, context, browser = initialize_browser()
+    
+    try:
+        while True:
+            unread_count = check_unread_messages(page)
+            log_activity(f"Checked {unread_count} unread messages")
+            time.sleep(CHECK_INTERVAL)
+            
+    except KeyboardInterrupt:
+        log_activity("Watcher stopped by user")
+    except Exception as e:
+        log_activity(f"Error occurred: {str(e)}")
+    finally:
+        context.close()
+        browser.close()
+
+if __name__ == "__main__":
+    main()
